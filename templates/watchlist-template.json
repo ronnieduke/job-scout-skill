@@ -1,0 +1,105 @@
+{
+  "_comment": "Job Scout watchlist configuration. Customize keywords, screening criteria, and target companies for your search.",
+
+  "keywords": {
+    "title_include": [
+      "REPLACE_WITH_YOUR_TARGET_TITLES",
+      "example: software engineer",
+      "example: product manager",
+      "example: data scientist"
+    ],
+    "title_exclude": [
+      "intern",
+      "associate",
+      "coordinator"
+    ],
+    "description_boost": [
+      "REPLACE_WITH_RELEVANT_SKILLS",
+      "example: python",
+      "example: react",
+      "example: machine learning"
+    ]
+  },
+
+  "screening": {
+    "_comment": "All keyword lists are optional. Leave empty or remove any that don't apply to your search. Use disabled_signals to turn off entire signal categories.",
+
+    "disabled_signals": [],
+    "_disabled_signals_options": "Available: Remote, Comp, Level, Builder, AI, TechDepth. Example: [\"AI\", \"TechDepth\"] to skip those checks.",
+
+    "remote_keywords": ["remote", "distributed", "work from home", "wfh", "anywhere"],
+    "hybrid_keywords": ["hybrid", "in-office", "on-site", "onsite", "in office"],
+
+    "senior_keywords": [],
+    "_senior_keywords_comment": "Title keywords that signal the RIGHT level for you. Examples: director, senior, lead, manager, vp, entry level, junior, mid-level. Depends on what YOU are targeting.",
+
+    "level_exclude_keywords": [],
+    "_level_exclude_comment": "Title keywords that signal the WRONG level. Examples: intern, coordinator, associate, junior, chief, c-suite. Depends on what you want to filter OUT.",
+
+    "builder_keywords": [],
+    "_builder_keywords_comment": "Keywords for hands-on/building roles. Examples: build, architect, design, implement, create, develop, engineer, automate. Leave empty if not relevant.",
+
+    "operator_keywords": [],
+    "_operator_keywords_comment": "Keywords for operational/management roles. Examples: manage campaigns, forecast, territory, quota, demand gen, content calendar. Leave empty if not relevant.",
+
+    "ai_keywords": [],
+    "_ai_keywords_comment": "Keywords signaling AI/tech relevance. Examples: ai, machine learning, llm, automation, agent. Leave empty if AI relevance doesn't matter to you.",
+
+    "deep_eng_keywords": [],
+    "_deep_eng_keywords_comment": "Red-flag keywords for roles that are too deeply technical. Examples: kubernetes, terraform, docker, sre. Leave empty if not applicable.",
+
+    "comp_floor": 0
+  },
+
+  "linkedin": {
+    "search_queries": [
+      {"keywords": "REPLACE_WITH_SEARCH_QUERY", "location": "United States", "remote": true}
+    ],
+    "time_range": "past_week"
+  },
+
+  "companies": [
+    {
+      "name": "Example (Greenhouse)",
+      "ats": "greenhouse",
+      "board_token": "example-company",
+      "notes": "Token = slug from boards.greenhouse.io/SLUG",
+      "skip": true
+    },
+    {
+      "name": "Example (Lever)",
+      "ats": "lever",
+      "board_token": "example-company",
+      "notes": "Token = slug from jobs.lever.co/SLUG",
+      "skip": true
+    },
+    {
+      "name": "Example (Ashby)",
+      "ats": "ashby",
+      "board_token": "example-company",
+      "notes": "Token = slug from jobs.ashbyhq.com/SLUG",
+      "skip": true
+    },
+    {
+      "name": "Example (Workable)",
+      "ats": "workable",
+      "board_token": "example-company",
+      "notes": "Token = slug from apply.workable.com/SLUG",
+      "skip": true
+    },
+    {
+      "name": "Example (Recruitee)",
+      "ats": "recruitee",
+      "board_token": "example-company",
+      "notes": "Token = subdomain from SLUG.recruitee.com",
+      "skip": true
+    },
+    {
+      "name": "Example (Workday)",
+      "ats": "workday",
+      "board_token": "example.wd5/CareersPage",
+      "notes": "Token = host.wd#/SiteName from example.wd5.myworkdayjobs.com/CareersPage. Requires Playwright.",
+      "skip": true
+    }
+  ]
+}

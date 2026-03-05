@@ -1,0 +1,5 @@
+# User config (generated during onboarding)
+config/
+
+# Environment variables
+.env
