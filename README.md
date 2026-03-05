@@ -104,6 +104,112 @@ Claude will:
 - Help tailor your resume for specific roles
 - Log the scan and any applications to your activity log
 
+## Automated Scanning
+
+You can schedule Job Scout to run automatically so new matches are waiting for you each morning. The scanner runs as a standalone Python script, no Claude Code session required.
+
+### macOS (launchd)
+
+Create a plist file at `~/Library/LaunchAgents/com.jobscout.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.jobscout</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/path/to/your/workspace/skills/job-scout/scripts/job-scout.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/path/to/your/workspace</string>
+
+    <key>StartCalendarInterval</key>
+    <array>
+        <!-- 8am -->
+        <dict>
+            <key>Hour</key>
+            <integer>8</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <!-- Noon -->
+        <dict>
+            <key>Hour</key>
+            <integer>12</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+        <!-- 3pm -->
+        <dict>
+            <key>Hour</key>
+            <integer>15</integer>
+            <key>Minute</key>
+            <integer>0</integer>
+        </dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/path/to/your/workspace/state/job-scout-last-run.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/path/to/your/workspace/state/job-scout-last-run.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>
+```
+
+Replace `/path/to/your/workspace` with your actual workspace path. Then load it:
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.jobscout.plist
+```
+
+To stop it:
+```bash
+launchctl unload ~/Library/LaunchAgents/com.jobscout.plist
+```
+
+Adjust the `StartCalendarInterval` entries to change the schedule. The example runs at 8am, noon, and 3pm local time.
+
+### Linux (cron)
+
+Open your crontab:
+
+```bash
+crontab -e
+```
+
+Add a line for each scan time. This example runs at 8am, noon, and 3pm:
+
+```
+0 8,12,15 * * * cd /path/to/your/workspace && /usr/bin/python3 skills/job-scout/scripts/job-scout.py >> state/job-scout-last-run.log 2>&1
+```
+
+### Windows (Task Scheduler)
+
+1. Open Task Scheduler and create a new task
+2. Set the trigger to your preferred schedule (e.g., daily at 8am, noon, 3pm)
+3. Set the action to run a program:
+   - **Program:** `python3`
+   - **Arguments:** `skills/job-scout/scripts/job-scout.py`
+   - **Start in:** `C:\path\to\your\workspace`
+4. Optionally redirect output by wrapping in a batch script that appends to `state\job-scout-last-run.log`
+
+### Checking Results
+
+After an automated run, the report is at `research/output/YYYY-MM-DD-job-scout-results.md` (using the date of the run). The last run log is at `state/job-scout-last-run.log`. Next time you open Claude Code, run `/job-scout` and it will pick up where the automated scan left off, showing you new matches and offering next steps.
+
 ## Interview Prep
 
 When you land an interview, generate a prep kit:
