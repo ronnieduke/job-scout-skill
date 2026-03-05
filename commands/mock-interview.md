@@ -34,9 +34,13 @@ Read silently (do not dump raw data at the user):
 
 > "No interview kit found for {Company}. Run `/interview-prep {Company}` first to build one, then come back here to practice against it."
 
-**Previous sessions:** If previous mock transcripts exist for this company, read the summary and offer:
+**Previous sessions:** If previous mock transcripts exist for this company, read the summaries (especially "Areas to Tighten," "Self-Assessment vs. Coaching," and "Recurring Patterns" sections) and offer:
 
 > "You practiced for {Company} on {date}. The summary flagged {specific areas}. Want to focus on those, or start fresh?"
+
+Save the previous session insights internally — you'll use them for the "Recurring Patterns" section in this session's summary.
+
+**Story inventory:** If `content/stories.md` exists, read it. During the session, you can reference stories the user isn't using and track which ones come up repeatedly.
 
 ---
 
@@ -116,13 +120,40 @@ This is the core loop. One question at a time.
 
 If the answer was solid: "That's strong. Moving on." No manufactured criticism. No numerical scores.
 
+**Gap handling:** When the user doesn't have a relevant story (vague answer, admission of no experience, visible struggling), don't just say "that was weak." Coach them on HOW to handle it. Four approaches depending on the situation:
+
+- **Bridge to something adjacent.** If they have related experience that's not a direct match, coach them to name the gap honestly and then pivot: "I haven't faced that exact situation, but the closest I've come is..." The honesty is the signal.
+- **Own it and go hypothetical.** If there's genuinely no experience, self-awareness beats bullshit: "I want to be honest — I haven't done this specifically. Here's how I'd approach it..." Coach them to outline a credible approach, not hand-wave.
+- **Reframe to a different strength.** If the gap is real but the user solves the same underlying problem a different way: "That's not my deepest area, but here's what I bring instead that addresses the same need..." Coach them to reframe without being evasive.
+- **Show active growth.** Use sparingly, only when the user has genuine evidence (courses, projects, mentoring): "This is an area I'm actively developing. Here's what I've started doing..." Empty growth claims are worse than admitting the gap.
+
+When coaching a gap: name the approach, model the pivot, and coach the user through saying it naturally. Example: *"You don't have enterprise SaaS experience — that's fine. Bridge to something adjacent: lead with your Segment work, name the scale difference honestly, then show how the skills transfer. Try it again."*
+
+If `content/stories.md` exists, check if there's a better story the user forgot to use: "Your story inventory has the Segment CDP project — that maps better here than what you just said. Try it with that example."
+
 **The user should NOT need to type "ready" or "next" between questions.** After feedback, go straight to the next question. If the user wants to redo an answer or discuss the feedback, they'll say so.
 
 ---
 
-### Step 5: End-of-Session Summary
+### Step 5: Self-Assessment + Summary
 
-When all questions are done (or the user ends early), generate and save a summary.
+When all questions are done (or the user ends early), pause before generating the summary.
+
+**Self-assessment prompt (one question, not a rating scale):**
+
+> "Before I give the summary — how do you think that went? Which answers felt strongest? Which ones felt shaky?"
+
+Wait for their response. Then compare their self-assessment against the coaching notes from the session.
+
+**If there's a meaningful delta, name it:**
+
+- If they thought an answer was strong but it was actually weak: "You thought the leadership question went well, but the answer was abstract — no specific team size, no outcome. It might feel strong in the moment because it was fluent, but it didn't land evidence."
+- If they thought an answer was weak but it was actually solid: "You flagged the technical question as shaky, but you gave a specific example with a clear result. That's exactly what they're looking for. Trust that one."
+- If their assessment matches: "Your read matches mine. Good self-awareness."
+
+This is a light touch. One prompt. Not a calibration exercise.
+
+**Then generate and save the summary.**
 
 **Save to:** `content/mock-interview-{company-slug}-{YYYY-MM-DD}.md`
 
@@ -150,6 +181,15 @@ If multiple sessions happen the same day, append a counter: `-{YYYY-MM-DD}-2.md`
 ## Key Moments
 {1-2 answers that need the most rework. Quote briefly from the user's answer, then suggest a better version or framing.}
 
+## Self-Assessment vs. Coaching
+{Include if meaningful delta exists. What the user thought vs. what the coaching notes show.}
+
+## Recurring Patterns
+{Include only if previous mock transcripts exist for this company. Compare against previous session summaries:
+- What improved since last session (specific)
+- What's still showing up (specific: "You still lead with context instead of the punchline — this is the third session in a row")
+- Whether previous weak areas were addressed or avoided this time}
+
 ## Readiness Assessment
 {Honest, direct. "You're ready for this screen" or "Technical depth questions need more prep before the HM round." No hedging.}
 
@@ -164,6 +204,7 @@ If multiple sessions happen the same day, append a counter: `-{YYYY-MM-DD}-2.md`
 - "Want me to update the interview kit with refined answers from this session?"
 - "Run another round focused on the weak areas?"
 - "Practice the comp conversation specifically?"
+- If any strong new stories surfaced during the session: "You used a couple of examples I don't have in your story inventory. Want me to add them?"
 
 ---
 

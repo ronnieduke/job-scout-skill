@@ -15,8 +15,15 @@ End-to-end job search automation: from finding roles to preparing for interviews
 
 ### Prepare for Interviews
 
-- **Interview prep kits** with company research, comp data, talking points, stage-specific Q&A, and comp negotiation scripts. Generated from live research, tailored to the specific role and your background.
+- **Interview prep kits** with company research, comp data, talking points, stage-specific Q&A, concerns anticipation, and comp negotiation scripts. Generated from live research, tailored to the specific role and your background.
+- **Hard-won insights extraction** to surface counterintuitive insights from real experience that make answers memorable and hard to replicate
+- **Story inventory** (`content/stories.md`) tracking your go-to examples, what skills they demonstrate, and when they were last used. Built during prep, refined during mock sessions.
 - **Mock interview sessions** with two voices: a realistic interviewer who asks questions based on your kit, and a coaching voice that gives direct, specific feedback after each answer. Supports recruiter screens, HM rounds, panels, and dedicated comp negotiation practice with adjustable difficulty.
+- **Gap handling coaching** for when you don't have a relevant story: bridge to adjacent experience, own it and go hypothetical, reframe to a different strength, or show active growth
+- **Self-assessment calibration** at the end of mock sessions, comparing your read of how it went against the coaching notes
+- **Recurring pattern tracking** across mock sessions, so you can see what's improving and what keeps showing up
+- **Post-interview debrief capture** for real interviews: questions asked, how answers landed, interviewer signals, and overall vibe
+- **Thank-you and follow-up drafts** personalized from debrief data, not templates
 - **Resume tailoring** guidance for each job description, with optional AI-powered generation via companion skill
 
 ### Track Everything
@@ -29,7 +36,9 @@ End-to-end job search automation: from finding roles to preparing for interviews
 - **Job descriptions archived locally** so you have them even after postings come down
 - **Research saved and reused** across prep sessions so you never repeat work
 - **Mock interview transcripts** with coaching summaries, so you can track improvement across sessions
-- **Everything builds on itself**: scan results feed the pipeline, the pipeline feeds interview prep, the prep kit feeds mock interviews, and every step is logged
+- **Story inventory** that grows organically across prep and mock sessions
+- **Interview debriefs** captured after real interviews, feeding back into prep kits for the next round
+- **Everything builds on itself**: scan results feed the pipeline, the pipeline feeds interview prep, the prep kit feeds mock interviews, debriefs feed the next round's prep, and every step is logged
 
 ## Quick Start
 
@@ -216,6 +225,10 @@ skills/job-scout/
     watchlist.json                  # Your configured watchlist
     profile.json                    # Your search profile
 
+content/
+  stories.md                        # Story inventory for interviews (built during prep/mocks)
+  debrief-{company}-{date}.md       # Post-interview debrief captures
+
 state/
   activity-log.md                   # Chronological job search activity log (for unemployment filings)
 ```
@@ -267,6 +280,100 @@ Activities worth logging during conversation:
 - User updates pipeline stage to Interviews → log the interview
 
 One row per activity. Keep details brief and factual.
+
+## Post-Interview Debrief
+
+When the user mentions they just had a real interview ("I just had my Acme screener," "finished the panel today," etc.), MARVIN captures a conversational debrief. This isn't a slash command — real interviews happen in conversation, not via commands.
+
+### What to Capture
+
+Walk through these naturally, not as a checklist interrogation:
+
+1. **Questions asked** — What did they actually ask? Capture as many as the user remembers.
+2. **Answer quality (self-assessed)** — Which answers felt strong? Which felt weak or caught them off guard?
+3. **Interviewer signals** — Did they seem interested? Push back on anything? Move on quickly from certain topics? Ask follow-ups that suggested engagement?
+4. **Surprises** — Anything unexpected: format, questions, people in the room, tone.
+5. **Overall vibe** — How did it feel? Positive, neutral, concerning?
+
+### Save and Log
+
+**Save debrief to:** `content/debrief-{company-slug}-{YYYY-MM-DD}.md`
+
+Format:
+```markdown
+# Interview Debrief: {Company} — {Role}
+
+**Date:** {YYYY-MM-DD}
+**Stage:** {stage}
+**Interviewer(s):** {names if known}
+
+## Questions Asked
+- {question 1}
+- {question 2}
+...
+
+## Self-Assessment
+**Strongest answers:** {summary}
+**Weakest answers:** {summary}
+**Caught off guard by:** {summary}
+
+## Interviewer Signals
+{observations}
+
+## Surprises
+{anything unexpected}
+
+## Overall Vibe
+{assessment}
+
+## Action Items
+- {any follow-up items identified}
+```
+
+**Log to activity log:** `| {YYYY-MM-DD} | Interview | {Company} | {Role} | {Stage} stage. Debrief saved to content/debrief-{slug}-{date}.md |`
+
+### After the Debrief
+
+Offer two things:
+
+1. **Thank-you / follow-up email:** Draft a brief, specific thank-you that references something from the actual conversation. Not a template. Pull from the debrief data: a topic they seemed excited about, a question that led to good discussion, a shared interest that came up. Keep it under 150 words.
+
+2. **Kit update:** If there's a next round, offer to update the interview kit with the real questions asked, any new intel about the team/role, and adjusted talking points based on what landed and what didn't.
+
+### Follow-Up Drafts (Beyond Thank-You)
+
+When the user mentions wanting to check in after silence ("haven't heard back from Acme," "should I follow up?"), offer to draft a follow-up email. Keep it short, professional, and genuine. Reference something specific from their last interaction. Not pushy, not desperate. Just a check-in.
+
+---
+
+## Story Inventory
+
+A practical reference of the user's go-to examples, tracked in `content/stories.md`.
+
+### File Format
+
+```markdown
+# Story Inventory
+
+Go-to examples for interviews. Built during prep, refined during mock sessions.
+
+| Story | Skills It Shows | Impact/Result | Last Used |
+|-------|----------------|---------------|-----------|
+| Segment CDP implementation | MarTech, cross-functional, AI | 40% reduction in manual workflows | Acme mock 3/5 |
+```
+
+### How It Gets Built
+
+- **During first `/interview-prep` run:** If `content/stories.md` doesn't exist, ask the user for 5-8 go-to professional examples. What did they do, what skills did it demonstrate, what was the result?
+- **During mock sessions:** When the user gives a strong answer with a specific example, offer to add it to the inventory.
+- **Organically:** If the user mentions a work example in conversation that would make a good interview story, note it.
+
+### How It Gets Used
+
+- **`/interview-prep`:** Map stories from the inventory to likely interview questions. Flag which stories are most relevant for the specific role.
+- **`/mock-interview`:** Coaching can reference specific stories from the inventory ("Use your Segment CDP story here instead — it maps better to what they're asking about"). Track which stories are getting overused across sessions.
+
+---
 
 ## Resume Tailoring
 

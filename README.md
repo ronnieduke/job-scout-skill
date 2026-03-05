@@ -220,6 +220,12 @@ When you land an interview, generate a prep kit:
 
 Claude will research the company, pull comp data from multiple sources, write stage-specific talking points, build a comp negotiation strategy with scripts, and generate likely questions with suggested answers tailored to your background. The kit is saved locally and reused across stages.
 
+The prep process also:
+- **Builds your story inventory** — On first run, captures 5-8 go-to professional examples and maps them to likely questions. Grows across sessions.
+- **Extracts hard-won insights** — Surfaces counterintuitive insights from your real experience that make answers memorable and hard for other candidates to replicate.
+- **Anticipates concerns** — Identifies 3-5 things the interviewer might worry about (resume gaps, career arc patterns, role mismatches) and prepares counter-evidence for each.
+- **Learns from real interviews** — If you debrief after a real interview, the next kit update incorporates actual questions asked, interviewer signals, and adjusted talking points.
+
 ## Mock Interviews
 
 Practice before the real thing:
@@ -229,6 +235,25 @@ Practice before the real thing:
 ```
 
 Claude plays the interviewer using questions sourced from your prep kit (reworded so you're practicing articulation, not recall). After each answer, a coaching voice gives direct, specific feedback: what landed, what to tighten, and angles from the kit you might be missing. Sessions can be quick (5 questions), full (8-12), targeted ("just leadership questions"), or focused on comp negotiation with adjustable difficulty. Transcripts and summaries are saved so you can track improvement across sessions.
+
+Mock sessions also include:
+- **Gap handling coaching** — When you don't have a relevant story, the coach suggests a specific pattern (adjacent bridge, hypothetical with self-awareness, reframe to strength, or growth narrative) and helps you practice it.
+- **Story inventory references** — If you have stories in your inventory that map better than what you said, the coach points them out.
+- **Self-assessment calibration** — At the end of each session, you assess how you did before seeing the summary. If your read differs from the coaching notes, that delta gets named.
+- **Recurring pattern tracking** — Across multiple sessions for the same company, the summary tracks what's improving and what keeps showing up.
+
+## Post-Interview Debriefs
+
+After a real interview, just tell Claude what happened:
+
+> "I just had my Acme screener"
+
+Claude captures a conversational debrief: what questions were asked, how your answers landed, interviewer signals, surprises, and overall vibe. The debrief is saved and logged automatically.
+
+After the debrief, Claude offers to:
+- **Draft a thank-you email** personalized from the conversation, not a template
+- **Update the interview kit** with real questions and adjusted talking points for the next round
+- **Draft follow-up emails** when you haven't heard back and want to check in
 
 ## Activity Logging
 
@@ -275,9 +300,14 @@ Job Scout checks 6 major hiring platforms that most companies use:
   Track improvement across sessions → log activity
         |
         v
+Real interview → debrief
+  Capture what happened → draft thank-you → update kit for next round
+  Debrief feeds back into prep for the next stage
+        |
+        v
 state/activity-log.md
   Every step is logged: scans, applications, prep, practice, interviews,
-  emails, calls. Ready for unemployment filing or personal reference.
+  debriefs, emails, calls. Ready for unemployment filing or personal reference.
 ```
 
 ## Files It Creates
@@ -299,6 +329,8 @@ content/
     company-role-title.md                 Archived job descriptions
   interview-kit-company.md                Interview prep kits
   mock-interview-company-YYYY-MM-DD.md    Mock interview transcripts and coaching summaries
+  debrief-company-YYYY-MM-DD.md           Post-interview debrief captures
+  stories.md                              Story inventory for interviews
 
 research/output/
   YYYY-MM-DD-job-scout-results.md         Daily scan reports
@@ -308,7 +340,7 @@ research/output/
 
 Job descriptions are archived automatically when you add a role to your pipeline. This matters because postings can be taken down at any time, sometimes before you even get a screening call. The archived copy gives you the full original JD for interview prep, resume tailoring, and reference.
 
-Everything builds on itself: scan results feed the pipeline, the pipeline feeds interview prep, prep kits feed mock interviews, and every step is logged to the activity record.
+Everything builds on itself: scan results feed the pipeline, the pipeline feeds interview prep, prep kits feed mock interviews, real interview debriefs feed back into prep for the next round, and every step is logged to the activity record.
 
 ## Optional Extras
 

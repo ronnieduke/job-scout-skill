@@ -14,6 +14,7 @@ This is a style guide for generating interview kits, not a fill-in-the-blank for
 - **Honest about gaps.** If comp data is thin, say so. If a red flag exists, name it. The kit should help the user make decisions, not just feel good.
 - **Answers in blockquotes.** Suggested verbal responses go in `> blockquote` format so they stand out visually.
 - **Strategy notes in italics.** Tactical advice about WHY to say something goes in `*italic*` after the answer.
+- **Hard-won insights stand out.** When a talking point contains a counterintuitive insight from the candidate's real experience, flag it with *"Differentiator — use this to stand out"* in italics. These make answers memorable and hard to replicate. Weave them naturally into narratives, especially "Tell Me About Yourself."
 
 ---
 
@@ -72,6 +73,8 @@ A scripted narrative in blockquote format. Structure:
 
 This should feel like a natural story, not a list of bullet points read aloud. End with forward momentum: why this opportunity specifically.
 
+If the candidate surfaced hard-won insights during prep (counterintuitive lessons from real experience), weave the strongest one into this narrative. A surprising insight early on makes the entire answer more memorable.
+
 ---
 
 ### Why {Company}
@@ -95,6 +98,33 @@ Tied to the JD. For each point:
 - Show why it's exciting, not just qualified
 
 Avoid: "I have 10 years of experience in X." Prefer: "The JD calls out [specific thing] — I did exactly this at [Company] when I [specific example]."
+
+---
+
+### Likely Concerns + Counter-Evidence
+
+3-5 things the interviewer might worry about. For each:
+
+```markdown
+#### {Concern}
+
+**Why they might worry:** {1-2 sentences explaining the gap or pattern they'll notice}
+
+**How it surfaces:** {The question or probe they'll use}
+
+**What they're looking for:** {The signal that would satisfy or confirm the concern}
+
+**Counter:**
+> {Specific response with evidence — a reframe, an adjacent example, or data that addresses it directly}
+
+*{Tactical note: which story to use, what tone to strike, what to avoid}*
+```
+
+Be honest about real gaps. The point isn't to spin — it's to prepare the candidate to handle the concern confidently rather than getting caught flat-footed. A candidate who names the gap first and then addresses it is stronger than one who pretends the gap doesn't exist.
+
+Sources for concerns: JD vs. resume gaps, career arc patterns (short tenures, industry switches), role mismatch signals, common biases for the role type.
+
+If previous interview debriefs exist, use interviewer pushback as confirmed concerns.
 
 ---
 

@@ -22,6 +22,8 @@ Before asking a single question, check what you already know.
 2. `skills/job-scout/config/profile.json` — Candidate background, target roles, comp floor/target, dealbreakers, preferences.
 3. `research/output/` — Any existing research on this company (glob for `*{company}*`).
 4. `content/` — Any existing interview kit for this company (glob for `interview-kit-{company}*`).
+5. `content/stories.md` — Existing story inventory (if it exists).
+6. `content/debrief-{company-slug}-*.md` — Previous interview debriefs for this company. If debriefs exist, use the real questions asked and interviewer signals to inform kit generation or updates.
 
 **If the role is already in `state/jobs.md`:**
 
@@ -52,6 +54,12 @@ Don't ask for everything in a wall of questions. Group naturally: "What company 
 
 If updating for a new stage, preserve the research sections and regenerate the stage-specific content (questions, talking points, questions to ask).
 
+If a debrief exists for a previous round (`content/debrief-{company-slug}-*.md`), incorporate what was learned:
+- Add the real questions that were asked to the "Likely Questions" section
+- Adjust talking points based on what landed well and what didn't
+- Update concerns based on interviewer signals (what they pushed back on, what they seemed satisfied with)
+- Note any new intel about the team, role, or process that came out in the interview
+
 ---
 
 ### Step 2: Get the Job Description
@@ -78,6 +86,45 @@ Check for an existing JD: `content/jobs/{company-slug}-{role-slug}.md`
 
 {JD content}
 ```
+
+---
+
+### Step 2b: Story Collection
+
+Check if `content/stories.md` exists.
+
+**If it doesn't exist:** This is the first prep run. Ask the user for 5-8 go-to professional examples:
+
+> "Before I build the kit, I want to know what stories you have in your back pocket. Give me 5-8 examples from your career — projects, wins, failures you learned from, leadership moments. For each one: what happened, what skills it shows, and what the result was. These become your story inventory — I'll map them to likely questions and use them across prep and mock sessions."
+
+Create `content/stories.md` with the inventory table format (see SKILL.md "Story Inventory" section).
+
+**If it already exists:** Read it silently. No need to ask again. You'll map these stories to questions in Step 5.
+
+**If a debrief exists for this company:** Note which questions were actually asked in a previous round. When generating the kit, prioritize those topics and map stories to them.
+
+---
+
+### Step 2c: Hard-Won Insights
+
+Before generating the kit, surface the user's counterintuitive insights from real experience. These make answers memorable and hard to replicate.
+
+**If this is the first kit (no previous kits exist):** Ask 3-5 reflection questions. Don't ask all at once — weave them naturally into the conversation:
+
+- What did you believe before starting [most relevant project/role] that turned out to be wrong?
+- What would surprise someone who hasn't done this kind of work?
+- What do most people in your field get wrong about [topic relevant to the target role]?
+- What counterintuitive lesson did a specific failure teach you?
+- What's something you'd do differently if you could redo [relevant project], and why?
+
+Pick the 2-3 most relevant questions based on the role. Don't ask all five.
+
+**If previous kits exist:** Check if hard-won insights were already captured. If so, reuse them. If the role is substantially different, ask 1-2 new reflection questions targeted at the new role's requirements.
+
+**Use the answers to:**
+- Weave the strongest insights into the "Tell Me About Yourself" narrative as differentiators
+- Flag them in the kit with a note: *"Differentiator — use this to stand out"*
+- Reference them in talking points where they naturally fit
 
 ---
 
@@ -154,13 +201,34 @@ Write a narrative that connects the candidate's background (from profile.json an
 
 Structure: career arc (2-3 sentences) → most relevant recent work (2-3 sentences) → why this role (1-2 sentences).
 
+Weave in hard-won insights from Step 2c where they naturally fit. A counterintuitive insight early in the narrative makes the whole answer more memorable. Flag any used with *"Differentiator — use this to stand out"* in italics.
+
 #### 5.5 Why This Company
 2-3 authentic, specific reasons based on the research. Not "I love your mission." Real things: specific strategic decisions, product direction, market position, cultural signals. Things that show genuine understanding.
 
 #### 5.6 Why This Role
 Tied to JD specifics and the candidate's actual strengths. What in the JD maps to what they've done? Be specific about the connection.
 
-#### 5.7 Comp Discussion
+#### 5.7 Likely Concerns + Counter-Evidence
+
+Identify 3-5 things the interviewer might worry about based on the resume, JD gaps, career arc, or role mismatch. For each concern:
+
+- **The concern:** What they might be thinking (e.g., "No enterprise SaaS experience," "Job-hopping," "Overqualified for this level")
+- **How it surfaces:** The question or probe they'll use to test it (e.g., "Tell me about your experience with enterprise sales cycles")
+- **What they're looking for:** The signal that would address or confirm their worry
+- **Counter with evidence:** A specific example, reframe, or data point that addresses the concern directly
+
+Sources for identifying concerns:
+- Gaps between the JD requirements and the candidate's resume/profile
+- Career arc patterns (short tenures, industry switches, level changes)
+- Role mismatch signals (overqualified, underqualified, lateral move)
+- Common biases for the role type (agency background applying to in-house, B2C applying to B2B, etc.)
+
+If a debrief from a previous round exists, use interviewer signals to validate or adjust concerns. If they pushed back on something specific, it's a confirmed concern — address it head-on.
+
+Map counter-evidence to stories from the story inventory where possible.
+
+#### 5.8 Comp Discussion
 Build a comp strategy section with scripts for different scenarios:
 - Default strategy: get them to share the range first
 - Deflection scripts (2-3 levels of pushback)
@@ -171,7 +239,7 @@ Build a comp strategy section with scripts for different scenarios:
 
 Base this on the salary research from Step 4.
 
-#### 5.8 Likely Questions + Talking Points
+#### 5.9 Likely Questions + Talking Points
 Stage-appropriate questions and suggested answers.
 
 **Recruiter screen questions:**
@@ -200,20 +268,22 @@ Tailor to the specific stage. Don't generate all stages unless the user asks.
 
 Answers should sound natural. Write them as things a person would actually say, not corporate interview speak.
 
-#### 5.9 Questions to Ask
+**Story mapping:** For each question, reference the most relevant story from `content/stories.md` if one exists. Note which story to use in italics after the talking point. If no story maps well, note the gap so mock sessions can focus on it.
+
+#### 5.10 Questions to Ask
 4-6 questions tailored to the stage and company. Each with a brief note on WHY to ask it (what signal you're getting).
 
 **Recruiter stage:** Team structure, remote policy, interview process, role scope, timeline.
 **Hiring manager:** Strategic priorities, what success looks like, team dynamics, current challenges.
 **Panel/final:** Cross-team collaboration, growth plans, company direction.
 
-#### 5.10 Green and Red Flags
+#### 5.11 Green and Red Flags
 Based on the user's dealbreakers and preferences from profile.json.
 
 **Green flags:** Signals that this role is a good fit.
 **Red flags:** Signals that should give pause. Include specific things to listen for.
 
-#### 5.11 Logistics Checklist
+#### 5.12 Logistics Checklist
 Practical reminders:
 - Date/time confirmation
 - Prep items to review before the call
