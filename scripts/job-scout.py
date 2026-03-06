@@ -16,12 +16,13 @@ Supported ATS platforms:
   - Workday     (hidden JSON API with Playwright fallback)
 
 Usage:
-    python3 skills/job-scout/scripts/job-scout.py                  # standard run
+    python3 skills/job-scout/scripts/job-scout.py                  # standard run (ATS + LinkedIn)
     python3 skills/job-scout/scripts/job-scout.py --verbose         # extra logging
     python3 skills/job-scout/scripts/job-scout.py --reset           # clear seen-jobs state
-    python3 skills/job-scout/scripts/job-scout.py --company Stripe  # scan a single company
+    python3 skills/job-scout/scripts/job-scout.py --company Stripe  # scan a single company (ATS only)
     python3 skills/job-scout/scripts/job-scout.py --dry-run         # fetch and filter, don't update state
     python3 skills/job-scout/scripts/job-scout.py --no-workday      # skip Workday companies (no Playwright needed)
+    python3 skills/job-scout/scripts/job-scout.py --no-linkedin     # skip LinkedIn (no BrightData needed)
 """
 
 import argparse
@@ -538,6 +539,158 @@ ATS_FETCHERS = {
 }
 
 # ---------------------------------------------------------------------------
+# LinkedIn via BrightData
+# ---------------------------------------------------------------------------
+
+BRIGHTDATA_DATASET_ID = "gd_lpfll7v5hcqtkxl6l"
+BRIGHTDATA_TRIGGER_URL = (
+    f"https://api.brightdata.com/datasets/v3/trigger"
+    f"?dataset_id={BRIGHTDATA_DATASET_ID}&format=json&type=discover_new&discover_by=keyword"
+)
+BRIGHTDATA_SNAPSHOT_URL = "https://api.brightdata.com/datasets/v3/snapshot"
+
+
+def linkedin_trigger(api_key: str, filters: dict, limit: int = 25) -> Optional[str]:
+    """Trigger a BrightData LinkedIn job search. Returns snapshot_id or None."""
+    url = f"{BRIGHTDATA_TRIGGER_URL}&limit_per_input={limit}"
+    try:
+        resp = SESSION.post(
+            url,
+            json=[filters],
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        return resp.json().get("snapshot_id")
+    except requests.RequestException as exc:
+        log(f"LinkedIn trigger error: {exc}")
+        return None
+
+
+def linkedin_poll(api_key: str, snapshot_id: str, max_wait: int = 180) -> Optional[list]:
+    """Poll a BrightData snapshot until ready. Returns list of jobs or None."""
+    url = f"{BRIGHTDATA_SNAPSHOT_URL}/{snapshot_id}?format=json"
+    elapsed = 0
+    while elapsed < max_wait:
+        try:
+            resp = SESSION.get(
+                url,
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException as exc:
+            log(f"LinkedIn poll error: {exc}")
+            return None
+
+        if isinstance(data, list):
+            return data
+
+        status = data.get("status", "")
+        if status in ("running", "closing", "starting"):
+            wait = 30 if status in ("closing", "starting") else 10
+            log(f"LinkedIn snapshot {snapshot_id}: status={status}, waiting {wait}s...")
+            time.sleep(wait)
+            elapsed += wait
+            continue
+
+        log(f"LinkedIn snapshot unexpected response: {data}")
+        return None
+
+    log(f"LinkedIn snapshot {snapshot_id} timed out after {max_wait}s")
+    return None
+
+
+def normalize_linkedin_job(job: dict) -> dict:
+    """Normalize a BrightData LinkedIn job into the standard job dict format."""
+    sal_min = None
+    sal_max = None
+    sal_text = ""
+    base = job.get("base_salary")
+    if base:
+        sal_min = base.get("min_amount")
+        sal_max = base.get("max_amount")
+        if sal_min and sal_max:
+            sal_text = f"${sal_min:,.0f}-${sal_max:,.0f}"
+        elif sal_min:
+            sal_text = f"${sal_min:,.0f}+"
+    if not sal_text:
+        sal_text = job.get("job_base_pay_range", "")
+
+    description = job.get("job_summary", "") or job.get("job_description_formatted", "")
+
+    return normalize_job(
+        job_id=str(job.get("job_posting_id", "")),
+        title=job.get("job_title", ""),
+        url=job.get("url", ""),
+        location=job.get("job_location", "Unknown"),
+        description=description,
+        company=job.get("company_name", "Unknown"),
+        ats="linkedin",
+        salary_min=int(sal_min) if sal_min else None,
+        salary_max=int(sal_max) if sal_max else None,
+        salary_text=sal_text,
+        posted_at=job.get("job_posted_date", ""),
+    )
+
+
+def fetch_linkedin(config: dict) -> Tuple[List[dict], List[str]]:
+    """Run all LinkedIn search queries from the watchlist. Returns (jobs, errors)."""
+    api_key = os.environ.get("BRIGHTDATA_API_KEY", "")
+    if not api_key:
+        return [], ["BRIGHTDATA_API_KEY not set, skipping LinkedIn"]
+
+    queries = config.get("linkedin", {}).get("search_queries", [])
+    if not queries:
+        return [], ["No LinkedIn search queries configured"]
+
+    time_range = config.get("linkedin", {}).get("time_range", "past_week")
+    time_range_map = {
+        "past_24h": "Past 24 hours",
+        "past_week": "Past week",
+        "past_month": "Past month",
+    }
+    bd_time_range = time_range_map.get(time_range, "Past week")
+
+    all_jobs = []
+    errors = []
+    seen_ids: set = set()
+
+    for q in queries:
+        filters = {
+            "keyword": q["keywords"],
+            "location": q.get("location", "United States"),
+            "time_range": bd_time_range,
+        }
+        if q.get("remote"):
+            filters["remote"] = "Remote"
+
+        log(f"LinkedIn search: {q['keywords']}")
+        snapshot_id = linkedin_trigger(api_key, filters, limit=25)
+        if not snapshot_id:
+            errors.append(f"LinkedIn trigger failed for '{q['keywords']}'")
+            continue
+
+        log(f"LinkedIn snapshot {snapshot_id} - polling...")
+        raw_jobs = linkedin_poll(api_key, snapshot_id)
+        if raw_jobs is None:
+            errors.append(f"LinkedIn poll failed/timed out for '{q['keywords']}'")
+            continue
+
+        log(f"LinkedIn '{q['keywords']}': {len(raw_jobs)} results")
+        for rj in raw_jobs:
+            jid = str(rj.get("job_posting_id", ""))
+            if jid and jid not in seen_ids:
+                seen_ids.add(jid)
+                all_jobs.append(normalize_linkedin_job(rj))
+
+        # Pace between queries
+        time.sleep(1)
+
+    return all_jobs, errors
+
+# ---------------------------------------------------------------------------
 # Keyword Filtering
 # ---------------------------------------------------------------------------
 
@@ -798,14 +951,22 @@ def generate_report(
     errors: list[dict],
     stats: dict,
     today: str,
+    linkedin_stats: Optional[dict] = None,
 ) -> str:
     lines = []
     lines.append(f"# Job Scout Results - {today}\n")
+    li = linkedin_stats or {}
+    li_summary = ""
+    if li.get("linkedin_jobs"):
+        li_summary = (
+            f" | **LinkedIn:** {li['linkedin_jobs']} jobs from "
+            f"{li['linkedin_queries']} queries"
+        )
     lines.append(
         f"**Scanned:** {stats['companies_scanned']} companies | "
         f"**Jobs fetched:** {stats['total_jobs']} | "
         f"**Title matches:** {stats['title_matches']} | "
-        f"**New:** {stats['new_matches']}\n"
+        f"**New:** {stats['new_matches']}{li_summary}\n"
     )
 
     lines.append("## New Matches\n")
@@ -837,6 +998,21 @@ def generate_report(
         if job.get("posted_at"):
             lines.append(f"- **Posted:** {job['posted_at'][:10]}")
         lines.append("")
+
+    # LinkedIn section
+    lines.append("## LinkedIn Discoveries\n")
+    if li.get("linkedin_jobs"):
+        li_new = [m for m in new_matches if m["job"].get("ats") == "linkedin"]
+        if li_new:
+            lines.append(f"{len(li_new)} new LinkedIn match(es) included in New Matches above.\n")
+        else:
+            lines.append(f"LinkedIn returned {li['linkedin_jobs']} jobs, {li.get('linkedin_title_matches', 0)} title matches, but no new ones.\n")
+    elif li.get("skipped"):
+        lines.append("*LinkedIn search skipped (--no-linkedin or no API key).*\n")
+    elif li.get("error"):
+        lines.append(f"*LinkedIn search failed: {li['error']}*\n")
+    else:
+        lines.append("*No LinkedIn search queries configured in watchlist.*\n")
 
     lines.append("## Previously Seen (Still Active)\n")
     if still_active:
@@ -873,6 +1049,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Fetch and filter but don't update state")
     parser.add_argument("--config", type=str, help="Path to watchlist.json (overrides default)")
     parser.add_argument("--no-workday", action="store_true", help="Skip Workday companies (avoids Playwright dependency)")
+    parser.add_argument("--no-linkedin", action="store_true", help="Skip LinkedIn search (requires BRIGHTDATA_API_KEY)")
     parser.add_argument("--archive-jds", action="store_true", help="Save full JDs for all new matches to content/jobs/")
     args = parser.parse_args()
     VERBOSE = args.verbose
@@ -945,11 +1122,28 @@ def main() -> None:
 
         time.sleep(0.3)
 
-    log(f"Total jobs fetched: {len(all_jobs)}")
+    # LinkedIn search
+    linkedin_jobs = []
+    linkedin_errors = []
+    if not args.no_linkedin and not args.company:
+        log("Starting LinkedIn search...")
+        linkedin_jobs, linkedin_errors = fetch_linkedin(CONFIG)
+        log(f"LinkedIn: {len(linkedin_jobs)} jobs from {len(CONFIG.get('linkedin', {}).get('search_queries', []))} queries")
+        for le in linkedin_errors:
+            errors.append({"company": "LinkedIn", "error": le})
+    elif args.no_linkedin:
+        log("LinkedIn search skipped (--no-linkedin)")
 
-    # Filter by title keywords
+    log(f"Total ATS jobs fetched: {len(all_jobs)}")
+
+    # Filter ATS jobs by title keywords
     title_filtered = [j for j in all_jobs if title_matches(j["title"], CONFIG)]
-    log(f"Title matches: {len(title_filtered)}")
+    log(f"ATS title matches: {len(title_filtered)}")
+
+    # Filter LinkedIn jobs by title keywords and combine
+    linkedin_filtered = [j for j in linkedin_jobs if title_matches(j["title"], CONFIG)]
+    log(f"LinkedIn title matches: {len(linkedin_filtered)}")
+    title_filtered = title_filtered + linkedin_filtered
 
     # Screen, score, and separate new vs seen
     new_matches = []
@@ -992,8 +1186,20 @@ def main() -> None:
         "new_matches": len(new_matches),
     }
 
+    linkedin_stats = None
+    if not args.no_linkedin and not args.company:
+        linkedin_stats = {
+            "linkedin_jobs": len(linkedin_jobs),
+            "linkedin_queries": len(CONFIG.get("linkedin", {}).get("search_queries", [])),
+            "linkedin_title_matches": len(linkedin_filtered),
+        }
+        if not linkedin_jobs and linkedin_errors:
+            linkedin_stats["error"] = "; ".join(linkedin_errors)
+    elif args.no_linkedin:
+        linkedin_stats = {"skipped": True}
+
     # Generate report
-    report = generate_report(new_matches, still_active, errors, stats, today)
+    report = generate_report(new_matches, still_active, errors, stats, today, linkedin_stats)
 
     # Write report file
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -1007,9 +1213,13 @@ def main() -> None:
 
     # Print summary
     print(f"Job Scout complete - {today}")
-    print(f"  Companies scanned: {companies_scanned}")
-    print(f"  Total jobs fetched: {len(all_jobs)}")
-    print(f"  Title matches: {len(title_filtered)}")
+    print(f"  ATS companies scanned: {companies_scanned}")
+    print(f"  ATS jobs fetched: {len(all_jobs)}")
+    if linkedin_stats and linkedin_stats.get("linkedin_jobs"):
+        print(f"  LinkedIn queries: {linkedin_stats['linkedin_queries']}")
+        print(f"  LinkedIn jobs fetched: {linkedin_stats['linkedin_jobs']}")
+        print(f"  LinkedIn title matches: {linkedin_stats['linkedin_title_matches']}")
+    print(f"  Total title matches: {len(title_filtered)}")
     print(f"  New matches: {len(new_matches)}")
     if errors:
         print(f"  Errors: {len(errors)}")
